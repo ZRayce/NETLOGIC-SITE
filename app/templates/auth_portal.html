@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>NETLOGIC | AUTHENTICATION PAGE</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        @keyframes pulse-red {
+            0%, 100% { border-color: #dc0000; box-shadow: 0 0 5px #dc0000; }
+            50% { border-color: #333333; box-shadow: 0 0 0px transparent; }
+        }
+        .hazard-header {
+            background: repeating-linear-gradient(
+                45deg,
+                #dc0000,
+                #dc0000 10px,
+                #000000 10px,
+                #000000 20px
+            );
+        }
+        .strobe-alert {
+            animation: pulse-red 1.5s infinite;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .terminal-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .terminal-scroll::-webkit-scrollbar-track {
+            background: #131313;
+        }
+        .terminal-scroll::-webkit-scrollbar-thumb {
+            background: #dc0000;
+            border-radius: 2px;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                  "on-secondary": "#680008",
+                  "surface-tint": "#ffb4a8",
+                  "secondary-fixed": "#ffdad6",
+                  "error-container": "#93000a",
+                  "inverse-surface": "#e5e2e1",
+                  "on-surface-variant": "#e9bcb5",
+                  "inverse-on-surface": "#313030",
+                  "surface-bright": "#393939",
+                  "primary-fixed-dim": "#ffb4a8",
+                  "tertiary-container": "#c9a900",
+                  "on-tertiary-fixed-variant": "#544600",
+                  "on-secondary-fixed": "#410003",
+                  "primary-container": "#dc0000",
+                  "on-tertiary-container": "#4c3f00",
+                  "outline": "#af8781",
+                  "on-background": "#e5e2e1",
+                  "on-tertiary-fixed": "#221b00",
+                  "secondary": "#ffb3ac",
+                  "surface-container-low": "#1c1b1b",
+                  "surface-container": "#201f1f",
+                  "on-primary-container": "#ffece9",
+                  "error": "#ffb4ab",
+                  "secondary-container": "#c40019",
+                  "surface": "#131313",
+                  "on-tertiary": "#3a3000",
+                  "on-error": "#690005",
+                  "on-secondary-fixed-variant": "#930010",
+                  "on-primary-fixed-variant": "#930100",
+                  "on-surface": "#e5e2e1",
+                  "tertiary": "#e9c400",
+                  "inverse-primary": "#c00000",
+                  "on-error-container": "#ffdad6",
+                  "on-primary": "#690000",
+                  "background": "#131313",
+                  "surface-variant": "#353534",
+                  "primary": "#ffb4a8",
+                  "surface-container-lowest": "#0e0e0e",
+                  "secondary-fixed-dim": "#ffb3ac",
+                  "on-secondary-container": "#ffd2cd",
+                  "tertiary-fixed-dim": "#e9c400",
+                  "surface-container-high": "#2a2a2a",
+                  "outline-variant": "#5e3f3a",
+                  "surface-dim": "#131313",
+                  "tertiary-fixed": "#ffe16d",
+                  "surface-container-highest": "#353534",
+                  "primary-fixed": "#ffdad4",
+                  "on-primary-fixed": "#410000"
+              },
+              "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+              },
+              "spacing": {
+                  "margin-desktop": "32px",
+                  "container-max": "1440px",
+                  "margin-mobile": "16px",
+                  "gutter": "16px",
+                  "unit": "4px"
+              },
+              "fontFamily": {
+                  "headline-lg": ["Anton"],
+                  "label-caps": ["JetBrains Mono"],
+                  "code-sm": ["JetBrains Mono"],
+                  "display-lg": ["Anton"],
+                  "headline-md": ["Anton"],
+                  "body-lg": ["JetBrains Mono"],
+                  "body-md": ["JetBrains Mono"],
+                  "headline-lg-mobile": ["Anton"]
+              },
+              "fontSize": {
+                  "headline-lg": ["48px", {"lineHeight": "1.1", "fontWeight": "400"}],
+                  "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                  "code-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                  "display-lg": ["72px", {"lineHeight": "1.0", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                  "headline-md": ["24px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                  "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                  "body-md": ["14px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                  "headline-lg-mobile": ["32px", {"lineHeight": "1.1", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-container">
+
+    <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
+
+    <div id="boot-overlay" class="hidden fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center font-mono p-6">
+        <div class="w-full max-w-xl border border-outline-variant bg-[#131313] p-6 relative">
+            <div class="hazard-header h-2 w-full absolute top-0 left-0"></div>
+            
+            <div class="flex justify-between items-center border-b border-outline-variant pb-2 mt-2">
+                <span class="text-xs text-primary font-bold tracking-wider">NETLOGIC_KERNEL_BOOTSTRAP // INITIALIZING...</span>
+                <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+            </div>
+            
+            <div id="boot-log-stream" class="mt-4 text-[11px] text-stone-400 h-48 overflow-hidden flex flex-col gap-1 select-none">
+                <p class="text-primary">[BOOT] STARTING SYSTEM BOOT SEQUENCE...</p>
+            </div>
+        </div>
+    </div>
+
+    <header class="bg-surface dark:bg-background border-b-4 border-primary-container flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 fixed top-0 z-50">
+        <div class="font-headline-md text-headline-md font-bold tracking-wider text-primary-container dark:text-primary uppercase ps-1 md:ps-2">NETLOGIC</div>
+        <div class="flex items-center gap-4">
+            <span class="material-symbols-outlined text-primary-container cursor-pointer hover:scale-110 duration-75">security</span>
+            <span class="material-symbols-outlined text-primary-container cursor-pointer hover:scale-110 duration-75">terminal</span>
+        </div>
+    </header>
+
+    <main class="pt-24 pb-16 px-margin-mobile md:px-margin-desktop min-h-screen flex items-center justify-center">
+        <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-gutter">
+            
+            <div class="md:col-span-5 flex flex-col gap-gutter">
+                <div class="bg-surface-container border-2 border-outline-variant p-gutter flex flex-col gap-4">
+                    <div class="flex items-center gap-2 text-primary-container">
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+                        <h2 class="font-headline-md text-headline-md uppercase">SYSTEM_ALERT</h2>
+                    </div>
+                    <div class="strobe-alert border-l-4 border-primary-container p-4 bg-surface-container-high">
+                        <p class="font-label-caps text-label-caps text-primary" id="status-title">STATUS: ACCESS RESTRICTED</p>
+                        <p class="font-body-md mt-2" id="status-desc">Level 4 Clearance required for terminal interaction. Unauthorized attempts are logged.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-surface-container-lowest border-2 border-outline-variant flex-grow flex flex-col min-h-[300px]">
+                    <div class="bg-surface-variant px-4 py-2 flex justify-between items-center border-b border-outline-variant">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">LOG_STREAM :: AUTH_DAEMON</span>
+                        <div class="flex gap-1">
+                            <div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_5px_#dc0000]"></div>
+                            <div class="w-2 h-2 rounded-full bg-surface-container-highest"></div>
+                            <div class="w-2 h-2 rounded-full bg-surface-container-highest"></div>
+                        </div>
+                    </div>
+                    <div class="p-4 font-code-sm text-code-sm text-primary overflow-y-auto terminal-scroll flex flex-col gap-1 h-80" id="terminal-log">
+                        <p>[09:44:12] INITIALIZING_SECURE_LAYER...</p>
+                        <p>[09:44:13] HANDSHAKE_REQUESTED from 192.168.1.1</p>
+                        <p>[09:44:13] ENCRYPTION: AES-256-GCM</p>
+                        <p class="text-tertiary">[09:44:14] WARNING: EXTERNAL_IP_DETECTED</p>
+                        <p>[09:44:15] AWAITING_OPERATOR_INPUT...</p>
+                        <p>[09:44:20] PULSE_CHECK: NOMINAL</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-7">
+                <div class="bg-surface border-4 border-outline-variant relative overflow-hidden">
+                    <div class="hazard-header h-4 w-full"></div>
+                    <div class="p-gutter md:p-12 flex flex-col gap-8">
+                        <div>
+                            <h1 class="font-display-lg text-headline-lg-mobile md:text-display-lg uppercase text-on-surface leading-none">CRIMSON_CMD</h1>
+                            <p class="font-label-caps text-label-caps text-on-surface-variant mt-2" id="protocol-title">IDENTITY VERIFICATION PROTOCOL v4.0.2</p>
+                        </div>
+
+                        <div id="login-container">
+                            <form class="flex flex-col gap-6" id="loginForm">
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-label-caps text-label-caps text-primary-container">OPERATOR_ID</label>
+                                    <input id="loginUsername" name="username" class="bg-black border border-outline-variant text-on-surface px-4 py-3 font-body-md focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="OPERATOR_USERNAME" type="text" required>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-label-caps text-label-caps text-primary-container">PASS_CODE</label>
+                                    <div class="relative w-full">
+                                        <input id="loginPassword" name="password" class="w-full bg-black border border-outline-variant text-on-surface pl-4 pr-12 py-3 font-body-md focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="••••••••••••" type="password" required>
+                                        <span onclick="togglePasswordVisibility('loginPassword', this)" class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline-variant cursor-pointer hover:text-primary select-none">visibility</span>
+                                    </div>
+                                </div>
+                                <button type="submit" class="bg-primary-container text-on-primary-container font-headline-md py-4 uppercase hover:bg-transparent hover:text-primary-container border-2 border-primary-container transition-all active:scale-95 duration-75">
+                                    INITIALIZE_SESSION
+                                </button>
+                            </form>
+                            <p class="font-code-sm text-center text-on-surface-variant mt-4">
+                                New operating node? <span id="toggle-to-register" class="text-primary cursor-pointer underline">Create credentials_</span>
+                            </p>
+                        </div>
+
+                        <div id="register-container" class="hidden">
+                            <form class="flex flex-col gap-6" id="registerForm">
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-label-caps text-label-caps text-primary-container">NEW_OPERATOR_ID</label>
+                                    <input id="regUsername" name="username" class="bg-black border border-outline-variant text-on-surface px-4 py-3 font-body-md focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="CHOSEN_USERNAME" type="text" required>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-label-caps text-label-caps text-primary-container">ROUTABLE_EMAIL</label>
+                                    <input id="regEmail" name="email" class="bg-black border border-outline-variant text-on-surface px-4 py-3 font-body-md focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="EMAIL@DOMAIN.COM" type="email" required>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-label-caps text-label-caps text-primary-container">NEW_PASS_CODE</label>
+                                    <div class="relative w-full">
+                                        <input id="regPassword" name="password" class="w-full bg-black border border-outline-variant text-on-surface pl-4 pr-12 py-3 font-body-md focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="••••••••••••" type="password" required>
+                                        <span onclick="togglePasswordVisibility('regPassword', this)" class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline-variant cursor-pointer hover:text-primary select-none">visibility</span>
+                                    </div>
+                                </div>
+                                <button type="submit" class="bg-primary-container text-on-primary-container font-headline-md py-4 uppercase hover:bg-transparent hover:text-primary-container border-2 border-primary-container transition-all active:scale-95 duration-75">
+                                    PROVISION_CREDENTIAL_BLOCK
+                                </button>
+                            </form>
+                            <p class="font-code-sm text-center text-on-surface-variant mt-4">
+                                Account established? <span id="toggle-to-login" class="text-primary cursor-pointer underline">Return to verification_</span>
+                            </p>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="h-px bg-outline-variant flex-grow"></div>
+                            <span class="font-label-caps text-label-caps text-on-surface-variant">OR_ALTERNATE_AUTH</span>
+                            <div class="h-px bg-outline-variant flex-grow"></div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button onclick="triggerOAuthSim('GOOGLE')" class="bg-surface-container-high border border-outline-variant py-3 px-4 flex items-center justify-center gap-3 font-label-caps text-label-caps hover:bg-surface-container-highest transition-colors active:scale-95">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                    <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.256-3.133C18.41 1.423 15.559 0 12.24 0 5.582 0 0 5.37 0 12s5.582 12 12.24 12c6.96 0 11.57-4.846 11.57-11.72 0-.795-.085-1.4-.187-1.995H12.24z"/>
+                                </svg>
+                                GOOGLE_OAUTH
+                            </button>
+                            <button onclick="triggerOAuthSim('GITHUB')" class="bg-surface-container-high border border-outline-variant py-3 px-4 flex items-center justify-center gap-3 font-label-caps text-label-caps hover:bg-surface-container-highest transition-colors active:scale-95">
+                                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path></svg>
+                                GITHUB_SYNC
+                            </button>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 right-0 p-4 opacity-10 pointer-events-none">
+                        <span class="material-symbols-outlined text-[120px]">fingerprint</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="policyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-surface border-4 border-primary-container max-w-lg w-full relative">
+            <div class="hazard-header h-3 w-full"></div>
+            <div class="p-6 flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-outline-variant pb-2">
+                    <span id="modalHeader" class="font-headline-md text-headline-md uppercase text-primary tracking-wide">PROTOCOL_ALERT</span>
+                    <span onclick="closeModal()" class="material-symbols-outlined text-outline-variant cursor-pointer hover:text-primary select-none">close</span>
+                </div>
+                <div id="modalContent" class="font-body-md text-sm text-on-surface max-h-[350px] overflow-y-auto terminal-scroll whitespace-pre-wrap pr-2"></div>
+                <button onclick="closeModal()" class="mt-2 bg-surface-container-high border border-outline-variant py-2 font-label-caps text-label-caps hover:bg-surface-container-highest uppercase transition-colors">Dismiss Window Context</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-surface-container-lowest dark:bg-surface-container-lowest border-t-2 border-outline-variant flex flex-col md:flex-row justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-gutter gap-4 fixed bottom-0 z-50">
+        <div class="font-label-caps text-label-caps text-on-surface-variant">
+            SYSTEM STATUS: <span class="text-primary-container animate-pulse">OPERATIONAL</span> // © 2026 NETLOGIC SECURE ACCESS
+        </div>
+        <div class="flex gap-6">
+            <span onclick="triggerPolicyPop('PRIVACY')" class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-100 cursor-pointer underline">PRIVACY PROTOCOL</span>
+            <span onclick="triggerPolicyPop('TERMS')" class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-100 cursor-pointer underline">TERMINAL TERMS</span>
+            <span onclick="triggerPolicyPop('SUPPORT')" class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-100 cursor-pointer underline">SUPPORT</span>
+        </div>
+    </footer>
+
+    <script>
+        // Tab-Switching Client State Visibility Controllers
+        const loginContainer = document.getElementById('login-container');
+        const registerContainer = document.getElementById('register-container');
+        const toRegister = document.getElementById('toggle-to-register');
+        const toLogin = document.getElementById('toggle-to-login');
+        const protocolTitle = document.getElementById('protocol-title');
+        const alertTitle = document.getElementById('status-title');
+        const alertDesc = document.getElementById('status-desc');
+
+        toRegister.addEventListener('click', () => {
+            loginContainer.classList.add('hidden');
+            registerContainer.classList.remove('hidden');
+            protocolTitle.textContent = "DIRECTORY_PROVISION_PROTOCOL v4.0.2";
+            alertTitle.textContent = "STATUS: REGISTER_NEW_NODE";
+            alertDesc.textContent = "Configure local identification keys to mount a new operational student terminal.";
+        });
+
+        toLogin.addEventListener('click', () => {
+            registerContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+            protocolTitle.textContent = "IDENTITY VERIFICATION PROTOCOL v4.0.2";
+            alertTitle.textContent = "STATUS: ACCESS RESTRICTED";
+            alertDesc.textContent = "Level 4 Clearance required for terminal interaction. Unauthorized attempts are logged.";
+        });
+
+        // Password Readability Visibility Modifier
+        function togglePasswordVisibility(fieldId, iconElement) {
+            const field = document.getElementById(fieldId);
+            if(field && field.type === "password") {
+                field.type = "text";
+                iconElement.textContent = "visibility_off";
+            } else if (field) {
+                field.type = "password";
+                iconElement.textContent = "visibility";
+            }
+        }
+
+        // Modular Document Modal Component Data Injector Loop
+        const policyModal = document.getElementById('policyModal');
+        const modalHeader = document.getElementById('modalHeader');
+        const modalContent = document.getElementById('modalContent');
+
+        function triggerPolicyPop(type) {
+            modalContent.innerHTML = "";
+            modalHeader.className = "font-headline-md text-headline-md uppercase text-primary tracking-wide";
+            
+            if (type === 'PRIVACY') {
+                modalHeader.textContent = "PRIVACY PROTOCOL // USER DATA POLICY";
+                modalContent.innerHTML = `
+                    <div class="flex flex-col gap-3 font-sans text-stone-300">
+                        <p><strong class="text-white font-mono">1. Absolute Privacy:</strong> Your data stays yours. NetLogic runs entirely out of your local setup database stack. We do not use advertising or profiling scripts, we do not track you outside of this app, and we never stream metrics to external servers.</p>
+                        <p><strong class="text-white font-mono">2. Profile Storage:</strong> To create an operator node, we save your username, email, and a cryptographically mashed hash of your master password block. This is utilized only to lock in your active problem-solving streaks and high-score attributes securely.</p>
+                        <p><strong class="text-white font-mono">3. Local Subnet Syncing:</strong> Subnetting layouts, variable length calculation tables, and lab progression records are saved exclusively to keep your workbook updated when logging in tomorrow. Wiping your node completely empties all database tables instantly.</p>
+                    </div>
+                `;
+                policyModal.classList.remove('hidden');
+            } 
+            else if (type === 'TERMS') {
+                modalHeader.textContent = "TERMINAL TERMS // OPERATION TERMS";
+                modalContent.innerHTML = `
+                    <div class="flex flex-col gap-3 font-sans text-stone-300">
+                        <p>By executing network verification procedures within NetLogic, you commit to drop all shortcuts and practice your network protocol mechanics diligently from level zero to certified engineering status.</p>
+                        <p>This software core is provided strictly as a student training station for active recall calculations, cable pinning layouts, and sandboxed terminal simulation drills.</p>
+                        <p class="text-xs text-stone-500 font-mono mt-2 opacity-50">SYS_WARNING: Do not interact with unverified link matrix streams or corrupted hardware bits...</p>
+                        <div class="mt-4 text-center">
+                            <button onclick="triggerCheekyPanic()" class="text-[10px] text-zinc-800 hover:text-red-700 font-mono focus:outline-none transition-colors">Run system_leak_test.sh</button>
+                        </div>
+                    </div>
+                `;
+                policyModal.classList.remove('hidden');
+            } 
+            else if (type === 'SUPPORT') {
+                modalHeader.textContent = "DISPATCH BUG_REPORT // SERVICE CHANNEL";
+                modalContent.innerHTML = `
+                    <form id="supportForm" class="flex flex-col gap-4 font-mono text-xs" onsubmit="handleSupportSubmit(event)">
+                        
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[10px] text-primary-container font-bold tracking-wider uppercase">ADMIN_DESTINATION_CORE</label>
+                            <input type="text" value="administration@netlogic.secure" class="w-full bg-zinc-900 border border-zinc-800 text-zinc-500 px-3 py-2.5 font-mono text-xs rounded-none cursor-not-allowed" readonly disabled>
+                        </div>
+                        
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[10px] text-primary-container font-bold tracking-wider uppercase">REPORT_SUBJECT</label>
+                            <input id="supportSubject" type="text" placeholder="e.g., UI clipping or /26 subnet validation mismatch" class="w-full bg-black border border-outline-variant text-on-surface px-3 py-2.5 font-mono text-xs rounded-none focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" required>
+                        </div>
+                        
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[10px] text-primary-container font-bold tracking-wider uppercase">METRICS_DESCRIPTION</label>
+                            <textarea id="supportMessage" rows="4" placeholder="Detail the specific bug or configuration fault you encountered..." class="w-full bg-black border border-outline-variant text-on-surface px-3 py-2.5 font-mono text-xs rounded-none focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container terminal-scroll resize-none transition-all" required></textarea>
+                        </div>
+                        
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[10px] text-primary-container font-bold tracking-wider uppercase">ATTACH_IMAGE_ASSET & DISPATCH</label>
+                            <div class="flex gap-2 w-full">
+                                <div class="relative flex flex-grow items-center justify-center border border-dashed border-outline-variant bg-black p-2.5 hover:bg-zinc-900/50 transition-colors">
+                                    <input id="supportFile" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    <div class="flex items-center gap-2 text-stone-400 pointer-events-none">
+                                        <span class="material-symbols-outlined text-sm">upload_file</span>
+                                        <span class="text-[10px]">SELECT SCREENSHOT_</span>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" title="TRANSMIT_REPORT" class="flex items-center justify-center bg-primary-container text-on-primary-container px-5 hover:bg-transparent hover:text-primary-container border-2 border-primary-container transition-all active:scale-95 duration-75">
+                                    <span class="material-symbols-outlined text-base">send</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                    </form>
+                `;
+                policyModal.classList.remove('hidden');
+
+                const fileInput = document.getElementById('supportFile');
+                if (fileInput) {
+                    fileInput.addEventListener('change', (e) => {
+                        const filenameSpan = fileInput.nextElementSibling.querySelector('span:last-child');
+                        if (fileInput.files.length > 0 && filenameSpan) {
+                            filenameSpan.textContent = fileInput.files[0].name.toUpperCase();
+                            filenameSpan.classList.add('text-primary');
+                        }
+                    });
+                }
+            }
+        }
+
+        function closeModal() {
+            policyModal.classList.add('hidden');
+        }
+
+        function handleSupportSubmit(e) {
+            e.preventDefault();
+            const subjectVal = document.getElementById("supportSubject").value;
+            injectCustomLog(`SUPPORT_SOCKET: Initializing routing sequence packets...`);
+            injectCustomLog(`SUCCESS: Diagnostic submission on "${subjectVal}" tunneled to admin.`);
+            closeModal();
+        }
+
+        function triggerCheekyPanic() {
+            modalHeader.textContent = "CRITICAL_KERNEL_MEMORY_PANIC";
+            modalHeader.className = "font-headline-md text-headline-md uppercase text-red-600 animate-bounce tracking-wide";
+            modalContent.innerHTML = `
+                <div class="bg-red-950/40 border border-red-700 p-4 font-mono text-xs text-red-500 flex flex-col gap-2">
+                    <p class="font-bold text-red-400">!!! ERROR: STACK_POINTER_DUMP_OVERFLOW !!!</p>
+                    <p>[00:23:11] EIP: 0012:ca014b2c EFLAGS: 00010286 ESP: 0023:c013f9f4</p>
+                    <p>[00:23:11] CR0: 8005003b CR2: 0000000c CR3: 00101000 CR4: 00000090</p>
+                    <p>[00:23:12] Router simulation memory address spaces tracking corrupted by unauthorized execution blocks.</p>
+                    <p class="mt-4 text-center animate-pulse text-white text-sm font-bold font-sans">Just kidding. Your system nodes are completely safe! 😉</p>
+                </div>
+            `;
+        }
+
+        function triggerOAuthSim(provider) {
+            injectCustomLog(`OAUTH_HANDSHAKE_INITIALIZED // ROUTING_TO_${provider}...`);
+            setTimeout(() => {
+                injectCustomLog(`CRITICAL: External identity handshakes require client tokens. Fallback to direct credentials initialization routing rules.`);
+            }, 1200);
+        }
+
+        // Internal Mock Logging Ticker Loop
+        const terminalLog = document.getElementById('terminal-log');
+        const logs = [
+            "SCANNING_PORT_6667...",
+            "HANDSHAKE_SUCCEEDED",
+            "USER_LATENCY: 12ms",
+            "SECURITY_TOKEN_GENERATED",
+            "HEARTBEAT_SIGNAL_STABLE",
+            "ENCRYPTION_LAYER_REINFORCED",
+            "WAITING_FOR_CREDENTIALS...",
+            "PACKET_LOSS: 0%",
+            "OPERATOR_RECOGNIZED: GUEST_00"
+        ];
+
+        let logIndex = 0;
+        function addLog() {
+            const p = document.createElement('p');
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            p.textContent = `[${time}] ${logs[logIndex]}`;
+            p.className = 'fade-in opacity-0 transition-opacity duration-500';
+            terminalLog.appendChild(p);
+            
+            setTimeout(() => p.classList.remove('opacity-0'), 10);
+            terminalLog.scrollTop = terminalLog.scrollHeight;
+            logIndex = (logIndex + 1) % logs.length;
+        }
+        setInterval(addLog, 5000);
+
+        function injectCustomLog(msgString) {
+            const p = document.createElement('p');
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            p.textContent = `[${time}] ${msgString}`;
+            p.className = 'fade-in opacity-0 transition-opacity duration-500 text-tertiary';
+            terminalLog.appendChild(p);
+            setTimeout(() => p.classList.remove('opacity-0'), 10);
+            terminalLog.scrollTop = terminalLog.scrollHeight;
+        }
+
+        // Input Layout UI Accent Highlights 
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                let parentBox = input.closest('.flex-col');
+                if (parentBox) {
+                    let label = parentBox.querySelector('label');
+                    if(label) label.classList.replace('text-primary-container', 'text-primary');
+                }
+            });
+            input.addEventListener('blur', () => {
+                let parentBox = input.closest('.flex-col');
+                if (parentBox) {
+                    let label = parentBox.querySelector('label');
+                    if(label) label.classList.replace('text-primary', 'text-primary-container');
+                }
+            });
+        });
+    </script>
+    <script src="/static/js/auth.js"></script>
+</body>
+</html>

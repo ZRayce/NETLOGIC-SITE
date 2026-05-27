@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>NETLOGIC | MAIN CORE CONSOLE</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+        .terminal-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .terminal-scroll::-webkit-scrollbar-track { background: #000000; }
+        .terminal-scroll::-webkit-scrollbar-thumb { background: #2a2a2a; }
+        .terminal-scroll::-webkit-scrollbar-thumb:hover { background: #dc0000; }
+        .hazard-ribbon {
+            background: repeating-linear-gradient(45deg, #dc0000, #dc0000 10px, #000000 10px, #000000 20px);
+        }
+        .path-vertical-line { width: 2px; background: #2a2a2a; margin: 0 auto; height: 24px; }
+        .wire-render-3d {
+            box-shadow: inset -3px 0 8px rgba(0,0,0,0.6), inset 2px 0 4px rgba(255,255,255,0.2), 0 4px 6px rgba(0,0,0,0.4);
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                  "primary-container": "#dc0000",
+                  "background": "#000000",
+                  "surface": "#131313",
+                  "surface-low": "#0e0e0e",
+                  "outline-variant": "#2a2a2a",
+                  "on-surface": "#e5e2e1",
+                  "success": "#4ade80",
+                  "warning": "#f59e0b"
+              },
+              "fontFamily": { "mono": ["JetBrains Mono"], "headline": ["Anton"] }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-mono text-xs select-none h-screen overflow-hidden flex flex-col">
+
+    <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
+
+    <header class="bg-surface border-b border-outline-variant h-14 flex items-center justify-between px-6 shrink-0 z-50 rounded-none">
+        <div class="flex items-center gap-3">
+            <span class="font-headline text-lg tracking-wider text-primary-container">NETLOGIC</span>
+            <span class="text-outline-variant">|</span>
+            <span class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest bg-black px-2 py-0.5 border border-outline-variant rounded-none">
+                [SYS_RANK]: <span id="hud-rank" class="text-primary-container">Network Cadet</span>
+            </span>
+        </div>
+        
+        <div class="flex items-center gap-6 text-[11px]">
+            <div class="flex items-center gap-2">
+                <span class="text-zinc-500 font-bold uppercase">XP_PROGRESS:</span>
+                <div class="w-32 bg-black h-2 border border-outline-variant rounded-none">
+                    <div id="hud-xp-bar" class="bg-primary-container h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <span id="hud-xp-text" class="text-zinc-400 font-bold">0_XP</span>
+            </div>
+            <button onclick="executeSecureLogout()" title="TERMINATE_SESSION" class="material-symbols-outlined text-zinc-500 hover:text-primary-container cursor-pointer transition-colors duration-75">logout</button>
+        </div>
+    </header>
+
+    <div class="flex flex-grow w-full overflow-hidden">
+        
+        <nav class="w-16 bg-surface border-r border-outline-variant flex flex-col items-center py-4 gap-4 shrink-0 rounded-none">
+            <button onclick="App.navigate('learning-path')" data-nav="learning-path" class="nav-btn w-10 h-10 flex items-center justify-center border border-outline-variant text-zinc-400 hover:text-primary-container hover:border-primary-container transition-all rounded-none">
+                <span class="material-symbols-outlined">map</span>
+            </button>
+            <button onclick="App.navigate('subnet-engine')" data-nav="subnet-engine" class="nav-btn w-10 h-10 flex items-center justify-center border border-outline-variant text-zinc-400 hover:text-primary-container hover:border-primary-container transition-all rounded-none">
+                <span class="material-symbols-outlined">lan</span>
+            </button>
+            <button onclick="App.navigate('cli-sandbox')" data-nav="cli-sandbox" class="nav-btn w-10 h-10 flex items-center justify-center border border-outline-variant text-zinc-400 hover:text-primary-container hover:border-primary-container transition-all rounded-none">
+                <span class="material-symbols-outlined">terminal</span>
+            </button>
+            <button onclick="App.navigate('crimping-lab')" data-nav="crimping-lab" class="nav-btn w-10 h-10 flex items-center justify-center border border-outline-variant text-zinc-400 hover:text-primary-container hover:border-primary-container transition-all rounded-none">
+                <span class="material-symbols-outlined">cable</span>
+            </button>
+            <button onclick="App.navigate('creator-vault')" data-nav="creator-vault" class="nav-btn w-10 h-10 flex items-center justify-center border border-outline-variant text-zinc-400 hover:text-primary-container hover:border-primary-container transition-all rounded-none">
+                <span class="material-symbols-outlined">folder_open</span>
+            </button>
+            <button onclick="App.navigate('profile')" data-nav="profile" class="nav-btn w-10 h-10 flex items-center justify-center border border-outline-variant text-zinc-400 hover:text-primary-container hover:border-primary-container transition-all mt-auto rounded-none">
+                <span class="material-symbols-outlined">account_box</span>
+            </button>
+        </nav>
+
+        <div class="flex-grow overflow-y-auto terminal-scroll bg-black relative">
+            
+            <section id="page-learning-path" class="page-view hidden p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+                <div class="lg:col-span-8 overflow-y-auto terminal-scroll pr-2 flex flex-col">
+                    <div class="mb-6">
+                        <span class="text-[10px] text-primary-container font-bold tracking-widest uppercase">CCNA_MASTERY_TRACK</span>
+                        <h1 class="font-headline text-2xl tracking-wide uppercase text-white mt-1">Journey Map Protocols</h1>
+                        <p class="text-zinc-500 mt-1">Pass each concept node evaluation lock to route your path to advanced network ranks.</p>
+                    </div>
+                    <div id="learning-path-map" class="flex flex-col gap-0"></div>
+                </div>
+                <div class="lg:col-span-4 hidden lg:flex flex-col gap-4 border border-outline-variant bg-surface p-4 h-fit rounded-none">
+                    <div class="flex items-center gap-2 border-b border-outline-variant pb-2 text-primary-container">
+                        <span class="material-symbols-outlined text-sm">analytics</span>
+                        <span class="font-bold uppercase tracking-wider text-[11px]">Handshake Telemetry Log</span>
+                    </div>
+                    <div class="bg-black border border-outline-variant p-3 font-mono text-[11px] text-zinc-400 flex flex-col gap-1.5 h-48 overflow-y-auto terminal-scroll rounded-none" id="path-sidebar-log"></div>
+                    <div class="border-t border-outline-variant pt-2">
+                        <span class="text-[10px] text-zinc-500 uppercase block mb-1">Global Core Completion</span>
+                        <div class="flex justify-between items-center text-white font-bold mb-1">
+                            <span id="sidebar-progress-count">0 / 15 NODES</span>
+                            <span id="sidebar-progress-pct">0%</span>
+                        </div>
+                        <div class="w-full bg-black h-2 border border-outline-variant rounded-none">
+                            <div id="sidebar-progress-bar" class="bg-success h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-subnet-engine" class="page-view hidden p-6 flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-outline-variant pb-3">
+                    <div>
+                        <span class="text-[10px] text-primary-container font-bold tracking-widest uppercase">ENTERPRISE_IPAM_CALCULATOR</span>
+                        <h1 class="font-headline text-xl tracking-wide uppercase text-white mt-0.5">Subnet Matrix Engine</h1>
+                    </div>
+                    <div class="flex border border-outline-variant bg-surface p-0.5 rounded-none">
+                        <button onclick="App.switchSubnetPanel('vlsm')" id="tab-btn-vlsm" class="sub-tab-btn bg-primary-container px-4 py-1.5 text-[11px] font-bold uppercase transition-colors rounded-none">IPv4 VLSM</button>
+                        <button onclick="App.switchSubnetPanel('supernet')" id="tab-btn-supernet" class="sub-tab-btn px-4 py-1.5 text-[11px] font-bold uppercase hover:bg-zinc-900 transition-colors rounded-none">Supernetting</button>
+                        <button onclick="App.switchSubnetPanel('ipv6')" id="tab-btn-ipv6" class="sub-tab-btn px-4 py-1.5 text-[11px] font-bold uppercase hover:bg-zinc-900 transition-colors rounded-none">IPv6 Blocks</button>
+                    </div>
+                </div>
+
+                <div id="panel-subnet-vlsm" class="sub-panel grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    <div class="lg:col-span-4 flex flex-col gap-4 bg-surface border border-outline-variant p-4 rounded-none">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[10px] uppercase text-zinc-400">Major Base Block (CIDR)</label>
+                            <input id="vlsm-network" type="text" value="192.168.1.0/24" class="bg-black border border-outline-variant text-on-surface px-3 py-2 text-xs rounded-none focus:outline-none focus:border-primary-container">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[10px] uppercase text-zinc-400">Host Distribution Parameter Sizes</label>
+                            <textarea id="vlsm-hosts" rows="3" class="bg-black border border-outline-variant text-on-surface px-3 py-2 text-xs resize-none rounded-none focus:outline-none focus:border-primary-container">50, 25, 10</textarea>
+                        </div>
+                        <button onclick="App.calcVLSM()" class="bg-primary-container text-white py-3 font-bold hover:bg-transparent hover:text-primary-container border border-primary-container transition-all rounded-none">EXECUTE SPACE COMPUTE</button>
+                    </div>
+                    
+                    <div class="lg:col-span-8 border border-outline-variant bg-surface flex flex-col overflow-hidden min-h-[350px] rounded-none">
+                        <div class="bg-black px-4 py-2 border-b border-outline-variant flex justify-between items-center text-zinc-400 font-bold uppercase rounded-none">
+                            <span>Address Allocation Output Matrix</span>
+                            <button onclick="App.exportVLSMPDF()" class="bg-surface-low border border-outline-variant px-3 py-1 text-[10px] hover:border-zinc-500 rounded-none">Export PDF report</button>
+                        </div>
+                        <div id="show-work-panel" class="bg-black p-4 border-b border-outline-variant font-mono text-[11px] text-success max-h-40 overflow-y-auto terminal-scroll rounded-none hidden"></div>
+                        <div class="flex-grow overflow-x-auto terminal-scroll">
+                            <table class="w-full text-left" id="vlsm-table">
+                                <thead class="bg-black border-b border-outline-variant text-zinc-500 text-[10px] uppercase font-bold">
+                                    <tr>
+                                        <th class="p-3">#</th>
+                                        <th class="p-3">REQ_HOSTS</th>
+                                        <th class="p-3">NETWORK_ID</th>
+                                        <th class="p-3">MASK</th>
+                                        <th class="p-3">GATEWAY_MIN</th>
+                                        <th class="p-3">HOST_MAX</th>
+                                        <th class="p-3">BROADCAST</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vlsm-tbody" class="divide-y divide-outline-variant"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="panel-subnet-supernet" class="sub-panel hidden flex flex-col gap-4 bg-surface border border-outline-variant p-4 rounded-none">
+                    <textarea id="supernet-input" rows="4" class="w-full bg-black border border-outline-variant text-white p-3 text-xs rounded-none focus:outline-none focus:border-primary-container" placeholder="192.168.0.0/24&#10;192.168.1.0/24"></textarea>
+                    <button onclick="App.calcSupernet()" class="bg-primary-container py-2 px-6 font-bold text-white max-w-xs rounded-none">SUMMARIZE CORES</button>
+                    <div id="supernet-result" class="hidden p-4 bg-black border border-outline-variant text-success font-bold font-mono rounded-none"></div>
+                </div>
+
+                <div id="panel-subnet-ipv6" class="sub-panel hidden flex flex-col gap-4 bg-surface border border-outline-variant p-4 rounded-none">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <input id="ipv6-network" type="text" value="2001:db8::/32" class="bg-black border border-outline-variant p-2 text-xs rounded-none focus:outline-none focus:border-primary-container">
+                        <input id="ipv6-count" type="number" value="4" class="bg-black border border-outline-variant p-2 text-xs rounded-none focus:outline-none focus:border-primary-container">
+                    </div>
+                    <button onclick="App.calcIPv6()" class="bg-primary-container py-2 px-6 font-bold text-white max-w-xs rounded-none">MAP IPV6 SPACE</button>
+                    <div id="ipv6-results-wrap" class="hidden border border-outline-variant overflow-x-auto"><table class="w-full text-left" id="ipv6-table"><tbody id="ipv6-tbody" class="divide-y divide-outline-variant font-mono"></tbody></table></div>
+                </div>
+            </section>
+
+            <section id="page-cli-sandbox" class="page-view hidden p-6 flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-outline-variant pb-2">
+                    <div>
+                        <span class="text-[10px] text-primary-container font-bold tracking-widest uppercase">INTERACTIVE_IOS_CLI_EMULATOR</span>
+                        <h1 class="font-headline text-2xl uppercase text-white mt-1">Virtual CLI Sandbox Core</h1>
+                    </div>
+                    <div class="flex border border-outline-variant bg-surface p-0.5 rounded-none text-[11px] font-bold uppercase">
+                        <button onclick="App.switchCLIDevice('router')" id="cli-dev-router" class="px-4 py-1.5 bg-primary-container text-white rounded-none">Cisco Router</button>
+                        <button onclick="App.switchCLIDevice('switch')" id="cli-dev-switch" class="px-4 py-1.5 text-zinc-400 hover:bg-zinc-900 transition-colors rounded-none">Catalyst Switch</button>
+                    </div>
+                </div>
+
+                <div class="border-2 border-outline-variant bg-black flex flex-col overflow-hidden h-80 rounded-none">
+                    <div id="cli-output" class="p-4 flex-grow overflow-y-auto font-mono text-zinc-400 text-xs flex flex-col gap-1 terminal-scroll bg-black"></div>
+                    <div class="bg-surface-low border-t border-outline-variant px-4 py-3 flex items-center gap-2">
+                        <span id="cli-prompt-label" class="text-primary-container font-bold">Router></span>
+                        <input id="cli-input" type="text" autocomplete="off" spellcheck="false" class="flex-grow bg-transparent border-none text-white font-mono p-0 m-0 text-xs focus:outline-none" placeholder="Execute terminal routing commands (Shortcuts enabled: conf t, int gi0/1, wr, sh ip int br)...">
+                    </div>
+                </div>
+
+                <div class="bg-surface border border-outline-variant p-4 rounded-none">
+                    <span class="text-[11px] font-bold text-zinc-400 uppercase block border-b border-outline-variant pb-1.5 mb-2">CONCURRENT_CHALLENGE_LEDGER</span>
+                    <div id="challenge-list" class="flex flex-col gap-2"></div>
+                </div>
+            </section>
+
+            <section id="page-crimping-lab" class="page-view hidden p-6 flex flex-col gap-4">
+                <h1 class="font-headline text-2xl uppercase text-white">Layer 1 Physical Termination Station</h1>
+                <div class="flex border border-outline-variant bg-surface p-0.5 rounded-none text-[11px] font-bold uppercase w-fit">
+                    <button onclick="App.switchCrimpMode('rj45')" id="crimp-mode-rj45" class="px-4 py-1.5 bg-primary-container text-white rounded-none">RJ45 Copper</button>
+                    <button onclick="App.switchCrimpMode('fiber')" id="crimp-mode-fiber" class="px-4 py-1.5 text-zinc-400 hover:bg-zinc-900 rounded-none">Optical Fiber</button>
+                </div>
+
+                <div id="lab-workbench-rj45" class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+                    <div class="xl:col-span-3 bg-surface border border-outline-variant p-4 flex flex-col gap-2 rounded-none"><div id="wire-sources" class="flex flex-col gap-1.5"></div></div>
+                    <div class="xl:col-span-6 bg-surface border border-outline-variant p-4 flex flex-col gap-4 rounded-none">
+                        <div class="flex items-center justify-between border-b border-outline-variant pb-2">
+                            <select id="crimp-standard" onchange="App.setCrimpStandard()" class="bg-black border border-outline-variant text-primary-container text-[11px] font-bold py-1 px-2 rounded-none"><option value="T568B">T568B</option><option value="T568A">T568A</option></select>
+                            <button onclick="App.crimpValidate()" class="bg-primary-container px-4 py-1 text-[11px] font-bold text-white rounded-none">EXECUTE CRIMP</button>
+                        </div>
+                        <div class="bg-neutral-950 p-6 flex flex-col items-center justify-center">
+                            <div class="w-full max-w-sm bg-zinc-800 border-4 border-zinc-700 p-4 shadow-xl relative flex flex-col gap-4">
+                                <div id="crimp-slots" class="grid grid-cols-8 gap-1.5 bg-zinc-950 border border-zinc-700 h-24 p-1.5 relative"></div>
+                            </div>
+                        </div>
+                        <div id="crimp-feedback" class="hidden mt-2"></div>
+                    </div>
+                    <div class="xl:col-span-3 bg-surface border border-outline-variant p-4 flex flex-col gap-3 rounded-none"><div id="crimp-reference" class="flex flex-col gap-1 text-[11px]"></div></div>
+                </div>
+
+                <div id="lab-workbench-fiber" class="hidden bg-surface border border-outline-variant p-6 flex flex-col gap-4 rounded-none">
+                    <span class="text-[11px] font-bold text-primary-container uppercase tracking-wider block border-b border-outline-variant pb-2">Single-Mode Optical Fusion Splicing Simulator</span>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="fiber-steps-grid"></div>
+                    <button onclick="App.executeFiberFusion()" id="fiber-fuse-btn" class="w-full bg-zinc-900 border border-outline-variant text-white py-3 font-bold hover:border-primary-container uppercase transition-colors">Fire High-Voltage Fusion Arc</button>
+                </div>
+            </section>
+
+            <section id="page-creator-vault" class="page-view hidden p-6 flex flex-col gap-4">
+                <h1 class="font-headline text-2xl uppercase text-white">Curated Field Lesson Vault</h1>
+                <div id="vault-videos" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div class="border-t border-outline-variant pt-4 flex flex-col gap-2">
+                    <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">📓 Local Field Notebook System</span>
+                    <textarea id="vault-notes" oninput="App.saveNotes(this.value)" rows="6" class="w-full bg-black border border-outline-variant text-white p-4 font-mono text-xs rounded-none focus:outline-none" placeholder="Capture network calculations details here..."></textarea>
+                    <button onclick="App.exportNotesToPDF()" class="w-fit bg-primary-container text-white font-bold py-2 px-6 uppercase rounded-none">📄 Export Notes to PDF</button>
+                </div>
+            </section>
+
+            <section id="page-profile" class="page-view hidden p-6 flex flex-col gap-4">
+                <h1 class="font-headline text-2xl uppercase text-white">Comprehensive Profile Ledger</h1>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-surface border border-outline-variant p-4 text-center rounded-none"><div id="stat-xp" class="font-headline text-3xl text-white">0</div><span class="text-[9px] text-zinc-500 uppercase block mt-1">XP_EARNED</span></div>
+                    <div class="bg-surface border border-outline-variant p-4 text-center rounded-none"><div id="stat-modules" class="font-headline text-3xl text-primary-container">0/15</div><span class="text-[9px] text-zinc-500 uppercase block mt-1">MODULES_PASSED</span></div>
+                    <div class="bg-surface border border-outline-variant p-4 text-center rounded-none"><div id="stat-subnets" class="font-headline text-3xl text-white">0</div><span class="text-[9px] text-zinc-500 uppercase block mt-1">SUBNETS_CALCULATED</span></div>
+                    <div class="bg-surface border border-outline-variant p-4 text-center rounded-none"><div id="stat-crimps" class="font-headline text-3xl text-white">0</div><span class="text-[9px] text-zinc-500 uppercase block mt-1">SUCCESSFUL_CRIMPS</span></div>
+                </div>
+                <div class="bg-surface border border-outline-variant p-4 rounded-none mt-4">
+                    <span class="text-[11px] font-bold text-zinc-400 block border-b border-outline-variant pb-1.5 mb-3 uppercase tracking-wider">🏆 Gamified Vector Achievements</span>
+                    <div id="achievements-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+                </div>
+                <button onclick="App.resetProgress()" class="mt-4 bg-black border border-zinc-900 text-zinc-600 hover:text-red-500 hover:border-red-900 py-2.5 max-w-xs uppercase font-bold tracking-widest text-[10px]">Wipe Node Profile Metrics Data</button>
+            </section>
+        </div>
+    </div>
+
+    <div id="modal-overlay" onclick="App.closeModal(event)" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md hidden items-center justify-center p-0 md:p-6 transition-all duration-150">
+        <div id="modal-box" class="bg-surface border-0 md:border-4 border-primary-container w-full h-full md:h-[90vh] md:max-w-4xl flex flex-col relative overflow-hidden rounded-none shadow-2xl">
+            <div class="hazard-ribbon h-3 w-full shrink-0"></div>
+            <div id="modal-quiz-hud" class="hidden px-6 py-3.5 flex justify-between items-center text-xs border-b border-outline-variant bg-black/40 shrink-0">
+                <div class="flex items-center gap-3">
+                    <span class="text-zinc-500 font-bold uppercase text-[10px]">PROGRESS:</span>
+                    <div class="w-32 bg-black h-2 border border-outline-variant rounded-none"><div id="modal-progress-bar" class="bg-success h-full transition-all duration-200" style="width: 0%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 font-mono text-sm select-none">
+                    <span class="text-zinc-500 text-[10px] font-sans mr-1">LIVES:</span>
+                    <span id="modal-hearts" class="text-primary-container font-bold tracking-widest animate-pulse">❤️ ❤️ ❤️</span>
+                </div>
+            </div>
+            <button onclick="App.closeModal(true)" class="absolute top-5 right-4 text-zinc-500 hover:text-white transition-colors z-50 p-1 bg-black/50 border border-outline-variant"><span class="material-symbols-outlined">close</span></button>
+            <div id="modal-content" class="p-6 md:p-8 font-mono text-xs overflow-y-auto terminal-scroll flex-grow flex flex-col gap-4"></div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
